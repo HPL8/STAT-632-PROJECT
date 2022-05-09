@@ -1,0 +1,360 @@
+---
+title: "New Final Project 2"
+author: "Harrison Plate"
+date: "4/28/2022"
+output: pdf_document
+---
+
+
+```{r}
+#install.packages("openintro")
+library(readr)
+cia_factbook = read_csv("cia_factbook.csv")
+#View(airline_delay)
+```
+
+```{r}
+head(cia_factbook)
+```
+
+```{r}
+#require(MASS)
+library(MASS)
+library(car)
+library(magrittr)
+library(dplyr)
+#library(HMisc)
+library(corrplot)
+library(ggcorrplot)
+library(glmnet)
+library(faraway)
+```
+
+```{r}
+df1 = na.omit(cia_factbook)
+
+#data cleaning
+#omit all of the na's. Not sure what else to do with them
+```
+
+```{r}
+pairs(df1[c(8, 2, 3, 4, 5, 6, 7, 9, 10, 11)])
+
+#paired scatterplot with our response at the top
+```
+
+From looking at our matrix scatter we can see that many predictive variables have a linear correlation with Maternity Mortality Rate.
+
+```{r}
+df_int1 = data.frame(df1)
+df_int2 = df_int1 %>% select(-country)
+df_final = df_int2 %>% select(maternal_mortality_rate, everything())
+
+#we made some intermediate data frames so that we could remove country and add our response, maternal mortality rate to the top of the dataframe.
+```
+
+```{r}
+corrplot(cor(df_final))
+
+#correlation matrix
+```
+
+By inspecting our at our correlation matrix, we come across many predictors being correlated to Maternity Mortality rate. As well some predictors being correlated within themselves such as birthrate and infant mortality rate, and birthrate and life expectancy rate.
+
+
+```{r}
+df1$continent = df1$country
+
+
+df2 <- df1 %>% mutate(continent = recode(continent,  "Russia" = 3, "Canada" = 1, "United States" = 1, "China" = 5, "Brazil" = 2, "Australia" = 6, "India" = 5, "Argentina" = 2, "Kazakhstan" = 5, "Congo, Democratic Republic of the" = 4, "Saudi Arabia" = 5, "Mexico" = 1, "Indonesia" = 5, "Sudan" = 4, "Libya" = 4, "Iran" = 5, "Mongolia" = 5, "Peru" = 2, "Chad" = 4, "Niger" = 4, "Mali" = 4, "South Africa" = 4, "Colombia" = 2, "Ethiopia" = 4, "Bolivia" = 2, "Mauritania" = 4, "Egypt" = 4, "Tanzania" = 4, "Venezuela" = 2, "Namibia" = 4, "Mozambique" = 4, "Pakistan" = 5, "Turkey" = 3, "Chile" = 2, "Zambia" = 4, "Burma" = 5, "Afghanistan" = 5, "France" = 3, "Somalia" = 4, "Central African Republic" = 4, "Ukraine" = 3, "Madagascar" = 4, "Botswana" = 4, "Kenya" = 4, "Yemen" = 5, "Thailand" = 5, "Spain" = 3, "Turkmenistan" = 5, "Cameroon" = 5, "Papua New Guinea" = 6, "Sweden" = 3, "Uzbekistan" = 5, "Morocco" = 4, "Iraq" = 5, "Paraguay" = 2, "Zimbabwe" = 4, "Japan" = 5, "Germany" = 3, "Congo, Republic of the" = 4, "Finland" = 3, "Vietnam" = 5, "Malaysia" = 5, "Norway" = 3, "Cote d'Ivoire" = 4, "Poland" = 3, "Oman" = 5, "Italy" = 3, "Philippines" = 5, "Ecuador" = 2, "Burkina Faso" = 4, "New Zealand" = 6, "Gabon" = 4, "Guinea" = 4, "United Kingdom" = 3, "Uganda" = 4, "Ghana" = 4, "Romania" = 3, "Laos" = 5, "Guyana" = 2, "Belarus" = 3, "Kyrgyzstan" = 5, "Senegal" = 4, "Syria" = 5, "Cambodia" = 5, "Uruguay" = 2, "Suriname" = 2, "Tunisia" = 4, "Nepal" = 5, "Bangladesh" = 5, "Tajikistan" = 5, "Greece" = 3, "Nicaragua" = 1, "Malawi" = 4, "Eritrea" = 4, "Honduras" = 1, "Liberia" = 4, "Bulgaria" = 3, "Cuba" = 1, "Guatemala" = 1, "Iceland" = 3, "Korea, South" = 5, "Hungary" = 3, "Portugal" = 3, "Jordan" = 5, "Azerbaijan" = 3, "Austria" = 3, "United Arab Emirates" = 5, "Czech Republic" = 3, "Serbia" = 3, "Panama" = 1, "Sierra Leone" = 4, "Ireland" = 3, "Georgia" = 3, "Sri Lanka" = 5, "Lithuania" = 3, "Latvia" = 3, "Togo" = 4, "Croatia" = 3, "Bosnia and Herzegovina" = 3, "Costa Rica" = 1, "Slovakia" = 3, "Dominican Republic" = 1, "Estonia" = 3, "Denmark" = 3, "Netherlands" = 3, "Switzerland" = 3, "Bhutan" = 5, "Guinea-Bissau" = 4, "Moldova" = 3, "Belgium" = 3, "Lesotho" = 4, "Armenia" = 3, "Solomon Islands" = 6, "Albania" = 3, "Equatorial Guinea" = 4, "Burundi" = 4, "Haiti" = 1, "Rwanda" = 4, "Macedonia" = 3, "Djibouti" = 4, "Belize" = 1, "El Salvador" = 1, "Israel" = 5, "Slovenia" = 3, "Fiji" = 6, "Maldives" = 5, "Malta" = 3, "Grenada" = 1, "Gaza Strip" = 4, "Saint Vincent and the Grenadines" = 1, "Barbados" = 1, "Saint Lucia" = 1, "Singapore" = 5, "Micronesia, Federated States of" = 6, "Tonga" = 6, "Bahrain" = 5, "Kiribati" = 6, "Sao Tome and Principe" = 4, "Mauritius" = 4, "Comoros" = 4, "Luxembourg" = 3, "Samoa" = 6, "Cabo Verde" = 4, "Trinidad and Tobago" = 1, "Brunei" = 5, "West Bank" = 5, "Cyprus" = 4, "Lebanon" = 4, "Jamaica" = 1, "Gambia, The" = 4, "Qatar" = 5, "Vanuatu" = 6, "Bahamas, The" = 1, "Puerto Rico" = 1, "Kuwait" = 5, "Swaziland" = 3, "Timor-Leste" = 5))
+
+#we made a new dataframe to group the countries into continents, but we aren't using it
+```
+
+
+
+```{r}
+df2$fcontinent = as.factor(df2$continent)
+
+#as factored continent, but we're not using it
+```
+
+
+$\beta_1$ = area
+
+$\beta_2$ = internet_users
+
+$\beta_3$ = death_rate
+
+$\beta_4$ = infant_mortality_rate
+
+$\beta_5$ = life_exp_at_birth
+
+$\beta_6$ = birth_rate
+
+$\beta_7$ = net_migration_rate
+
+$\beta_8$ = population
+
+$\beta_9$ = population_growth_rate
+
+$H_0: \beta_j = 0$
+
+$H_A: \beta_j \neq 0$ for at least 1
+
+```{r}
+lmfull = lm(maternal_mortality_rate ~ area + internet_users + death_rate + infant_mortality_rate + life_exp_at_birth + birth_rate + net_migration_rate + population + population_growth_rate, data = df_final)
+boxcox(lmfull)
+
+#original model with all the predictors present
+```
+
+```{r}
+summary(powerTransform(lmfull))
+
+#power transform/boxcox
+```
+
+The boxcox/powertransform is telling us to do a 0.2 transformation
+
+```{r}
+lmlogfull = lm((maternal_mortality_rate)^(1/5) ~ area + internet_users + death_rate + infant_mortality_rate + life_exp_at_birth + birth_rate + net_migration_rate + population + population_growth_rate, data = df_final)
+summary(lmlogfull)
+
+#our model with a 0.2 transformation
+```
+
+```{r}
+par(mfrow = c(1, 2))
+plot(lmlogfull, 1:2)
+
+#checking assumptions
+```
+
+```{r}
+hist(resid(lmlogfull), main = "", xlab = "Residuals")
+
+#checking assumptions
+```
+
+Assumptions:
+
+Linearity: The assumption has been satisfied because of the good looking QQ plot with the dots near the line.
+
+Independence of Errors: The assumption has been satisfied because of the residuals vs fitted graph, where there is no correlation.
+
+Normality of Errors: The residuals most be approximately normally distributed. This is proven by the QQ plot (can also use a histogram of the residuals), which we can see is normally distributed since the points are close to the line.
+
+Equal Variances: This is proven by the residuals vs fitted graph. The variance of residuals are the same across all values on the x-axis. The graph shows no pattern, so the assumption has been met.
+
+```{r}
+lmlogstep = step(lmlogfull)
+
+#step
+```
+
+The only 4 predictors that have a significant effect on the response are birth_rate, infant_mortality_rate, death_rate, and life_exp_at_birth.
+
+```{r}
+summary(lmlogstep)
+```
+
+If the null hypothesis is true, we would expect the F value to be close to 1. The F-statistic is 238.5 with the p value of < 2.2e-16. Since the F value is not near 1 and the p value is less than the significance level of $\alpha$ = 0.05, we reject $H_0$ and we know that the data claims there is a relationship between the response, maternal_mortality_rate, and at least one predictor in the model.
+
+```{r}
+s1 = summary(lmlogfull)
+s2 = summary(lmlogstep)
+s1$adj.r.squared
+s2$adj.r.squared
+
+#we are comparing R^2 of the model before and after step
+```
+
+We wanted to observe if there is a change in our Adjusted R^2, by comparing both Adjusted R^2 we notice an increase of the Adjust R^2 for the reduced model, by .002. 84.36858% of the variability for (maternal_mortality_rate)^(1/5) is determined by the model.
+
+```{r}
+anova(lmlogstep, lmlogfull)
+```
+
+The p-value is 0.7557, which is higher than $\alpha = 0.05$. Therefore, we fail to reject the null hypothesis and we know that $\beta_1$ (area), $\beta_2$ (internet_users), $\beta_7$ (net_migration_rate), $\beta_8$ (population), and $\beta_9$ (population_growth_rate) have no impact on our model, so we can remove them and use the reduced model.
+
+```{r}
+AIC(lmlogstep, lmlogfull)
+
+#comparing AIC of the model before and after the step
+```
+
+The stepped model has a lower AIC, and a lower AIC means the better the regression model fits the data.
+
+
+```{r}
+pairs((maternal_mortality_rate)^(1/5) ~ death_rate + infant_mortality_rate + 
+    life_exp_at_birth + birth_rate, data = df_final)
+
+#pairs plot after 0.2 transformation on the response
+```
+
+Things are looking generally linear here!
+
+
+```{r}
+performance::check_model(lmlogstep)
+```
+
+The assumptions still look good, but we notice some collinearity issues we need to address.
+
+```{r}
+round(vif(lmlogstep), 2)
+```
+
+Variance inflation factors do exceed 5 cut-off.
+
+```{r}
+#we need to figure out which predictor to drop in order to address the collinearity issue, so we do a ridge regression
+
+y = df_final$maternal_mortality_rate^(1/5)
+x = data.matrix(df_final[, c("death_rate", "infant_mortality_rate", "life_exp_at_birth", "birth_rate")])
+
+model = glmnet(x, y, alpha = 0)
+summary(model)
+
+#loading data in for ridge regression
+```
+
+```{r}
+cv_model = cv.glmnet(x, y, alpha = 0)
+
+best_lambda = cv_model$lambda.min
+best_lambda
+
+#we are trying to find a lambda value that produces the lowest MSE
+```
+
+The lambda value that minimizes the test MSE is 0.06342977. The lowest MSE produces the best model.
+
+```{r}
+plot(cv_model)
+
+#visualization for finding the best lambda
+```
+
+```{r}
+best_model = glmnet(x, y, alpha = 0, lambda = best_lambda)
+coef(best_model)
+
+#using the best lambda to find the coefficients so that we know what column to drop to address the collinearity issue.
+```
+
+```{r}
+plot(model, xvar = "lambda")
+
+#ridge trace plot
+```
+
+The green line on the ridge trace plot represents life_exp_at_birth. It has the coefficient that's furthest away from 0 (-0.034548217), which means it is the least important predictor in our model.
+
+```{r}
+lmlogstep_no_col = lm((maternal_mortality_rate)^(1/5) ~ death_rate + infant_mortality_rate + birth_rate, data = df_final)
+summary(lmlogstep_no_col)
+
+#new model without life_exp_at_birth, which the ridge plot told us to drop
+```
+
+From looking at the summary statistics of our data, we notice that one predictive variable in our regression model has a p-value greater than $\alpha = 0.05$. We continue to see if we can remove death_rate as a predictive variable in our model.
+
+
+```{r}
+anova(lmlogstep_no_col, lmlogstep)
+```
+
+The p-value is 1.189e-10, which is lower than $\alpha = 0.05$. Therefore, we reject the null hypothesis and we know that $\beta_5$ (life_exp_at_birth) does have an impact on our model. However, we chose to remove it because we want to fix the collinearity problem. We will do the step function again; there is a problem with the p-value for death_rate.
+
+
+```{r}
+lmlogstep_no_col2 = step(lmlogstep_no_col)
+
+#we step it again
+```
+
+The step function tells us to remove death_rate, which agrees with the fact that the p-value is so high.
+
+```{r}
+s3 = summary(lmlogstep_no_col)
+s4 = summary(lmlogstep_no_col2)
+s3$adj.r.squared
+s4$adj.r.squared
+```
+
+Our R^2 does improve once we remove the column with a high p-value, death_rate, from the model. The p-value was greater than $\alpha = 0.05$, which means it is not a significant predictor variable in our model.
+
+```{r}
+anova(lmlogstep_no_col2, lmlogstep_no_col)
+```
+
+The p-value is 0.5849, which is higher than $\alpha = 0.05$. Therefore, we fail to reject the null hypothesis and we know that $\beta_3$ (death_rate) has no significant impact on our model, so we can remove it and use the reduced model.
+
+```{r}
+AIC(lmlogstep_no_col2, lmlogstep_no_col)
+```
+
+The second stepped model has a lower AIC, and a lower AIC means the better the regression model fits the data.
+
+```{r}
+summary(lmlogstep_no_col2)
+
+#FINAL MODEL!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+```
+
+If the null hypothesis is true, we would expect the F value to be close to 1. The F-statistic is 359.4 with the p value of < 2.2e-16. Since the F value is not near 1 and the p value is less than the significance level of $\alpha$ = 0.05, we reject $H_0$ and we know that the data claims there is a relationship between the response, maternal_mortality_rate, and at least one predictor in the model.
+
+$\widehat{Maternal Mortality Rate}^{1/5} = 1.339008 + 0.015183(Infant Mortality Rate) + 0.030970(Birth Rate)$
+
+A one unit increase in infant_mortality_rate (1 more death per 1,000 live births), with the other predictor (birth_rate) held fixed, is associated with an increase in maternal_mortality_rate by $(0.015183)^5$ units, which equals 8.06841002E-10 units, which can be interpreted as 8.06841002E-10 more deaths (where the death is related to pregnancy or birth) per 100,000 live births.
+
+A one unit increase in birth_rate (1 birth per 1000 people), with the other predictor (infant_mortality_rate) held fixed, is associated with an increase in maternal_mortality_rate by $(0.030970)^5$ units, which equals 2.84908907E-8 units, which can be interpreted as 2.84908907E-8 more deaths (where the death is related to pregnancy or birth) per 100,000 live births.
+
+
+```{r}
+performance::check_model(lmlogstep_no_col2)
+```
+
+```{r}
+round(vif(lmlogstep_no_col2), 2)
+```
+
+Variance inflation factors do not exceed the 5 cut-off!
+
+```{r}
+shapiro.test(resid(lmlogstep_no_col2))
+```
+
+$H_0:$ The data is normally distributed
+
+$H_A:$ The data is not normally distributed
+
+A W value that's greater than 0.95 indicates that the data is normal. Also, the p-value is greater than $\alpha = 0.05$, which means we fail to reject $H_0:$, and we know the data is normally distributed.
+
+
+```{r}
+p <- 2
+n <- nrow(df_final)
+
+plot(hatvalues(lmlogstep_no_col2), rstandard(lmlogstep_no_col2),
+xlab = 'Leverage', ylab = 'Standardized Residuals')
+abline(v = 2*(p+1)/n, lty=2) #cutoff for leverage points
+abline(h = c(-2, 2), lty = 2) #cutoff for outliers
+```
+
+```{r}
+high_sr = which(abs(rstandard(lmlogstep_no_col2)) > 2)
+df_final[high_sr,]
+```
+The outliers are Indonesia, Sudan, Iran, Mali, Afghanistan, Zimbabwe, Burkina Faso, Guyana, Lesotho, Sao Tome and Principe, & Kiribati.
+
+```{r}
+high_leverage = which(abs(hatvalues(lmlogstep_no_col2)) > .033)
+df_final[high_leverage,]
+```
+
+
+
